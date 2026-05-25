@@ -1,0 +1,190 @@
+# Weather and Daily Step Count Analysis
+
+**Course:** DSA 210 - Introduction to Data Science  
+**Student:** Alperen Guldur  
+**GitHub Repository:** https://github.com/alperenguldur/-DSA210-DataScienceProject
+
+## Project Summary
+
+In this project, I analyzed whether daily weather conditions are related to my daily walking activity. The step data comes from Apple Health and the weather data comes from Open-Meteo. I cleaned both datasets, merged them by date, explored the data with graphs, tested simple hypotheses, and then applied regression models to predict daily step count.
+
+The main result is that weather variables alone do not explain my steps very well. Rainy days and non-rainy days were not statistically different, and temperature and precipitation had weak correlations with steps. The machine learning results also show that more personal variables, such as class days, exams, sleep, and daily routine, would probably be needed for a better model.
+
+## Project Requirements Covered
+
+| Requirement | Where it is covered |
+|---|---|
+| GitHub repository | The project repository link is included above. |
+| Project proposal idea | The research question, motivation, datasets, and plan are explained. |
+| Data collection, EDA, and hypothesis tests | The report includes data cleaning, visualizations, correlations, and statistical tests. |
+| Machine learning methods | Linear Regression, Ridge Regression, Decision Tree Regression, KNN Regression, and a baseline model are included. |
+| Final report and code | This README summarizes the project and `complete_analysis_code.py` contains the full combined code. |
+
+## 1. Introduction
+
+My research question is:
+
+**Is there a meaningful relationship between daily weather conditions and daily step count?**
+
+The target variable is daily steps. The main explanatory variables are average temperature, precipitation, weather code, rainy day indicator, weekday, weekend indicator, and month.
+
+## 2. Data Collection and Cleaning
+
+The Apple Health file had **104 rows** and the weather file had **102 rows**. After cleaning and merging by date, the final dataset had **102 daily observations** from **2026-01-01 to 2026-04-12**.
+
+| Dataset | Size | Notes |
+|---|---:|---|
+| Apple Health steps | 104 rows | Daily total step count |
+| Open-Meteo weather | 102 rows | Daily temperature and precipitation |
+| Merged dataset | 102 rows | Final dataset used for analysis |
+
+I converted the date columns to datetime format, converted numerical columns, removed invalid rows, and created new variables such as `rainy`, `weekday`, `is_weekend`, `day_of_week`, and `month`. The final modeling variables had no missing values.
+
+## 3. Descriptive Statistics
+
+| Variable | Mean | Std. Dev. | Min | Max |
+| --- | --- | --- | --- | --- |
+| Steps | 5,115.93 | 2,289.21 | 478.00 | 11,680.00 |
+| Temperature (C) | 8.87 | 3.24 | 0.40 | 15.43 |
+| Precipitation (mm) | 0.97 | 1.70 | 0.00 | 9.10 |
+
+There were **79 rainy days** and **23 non-rainy days**. The average step count was about **5,116 steps per day**.
+
+## 4. Exploratory Data Analysis
+
+The graph below shows daily steps over time. The values change a lot from day to day, so step count seems to depend on more than only weather.
+
+![Daily Steps Over Time](report_assets/daily_steps_over_time.png)
+
+The scatter plots show weak relationships between weather variables and steps.
+
+![Temperature vs Daily Steps](report_assets/temperature_vs_steps.png)
+
+![Precipitation vs Daily Steps](report_assets/precipitation_vs_steps.png)
+
+![Rainy vs Non-rainy Days](report_assets/rainy_vs_nonrainy.png)
+
+Average steps on non-rainy days were **4,893.78**. Average steps on rainy days were **5,180.61**. Rainy days were slightly higher by **286.82 steps**, but this difference is small.
+
+![Average Steps by Weekday](report_assets/average_steps_by_weekday.png)
+
+| Weekday | Average Steps |
+| --- | --- |
+| Monday | 5,066 |
+| Tuesday | 6,221 |
+| Wednesday | 5,278 |
+| Thursday | 5,035 |
+| Friday | 5,140 |
+| Saturday | 4,336 |
+| Sunday | 4,816 |
+
+## 5. Correlation Analysis
+
+![Correlation Matrix](report_assets/correlation_matrix.png)
+
+| Variable | Correlation with steps |
+| --- | --- |
+| month | -0.3248 |
+| is_weekend | -0.1529 |
+| precipitation_mm | -0.1166 |
+| temperature_c | -0.0424 |
+| dominant_weather_code | 0.0423 |
+
+The weather correlations are weak. Precipitation has a small negative correlation with steps and temperature is almost zero. This means weather alone does not look like a strong explanation for daily steps.
+
+## 6. Hypothesis Testing
+
+### Hypothesis 1: Rainy vs. Non-rainy Days
+
+- **H0:** Average steps are the same on rainy and non-rainy days.
+- **H1:** Average steps are different on rainy and non-rainy days.
+
+| Test | Statistic | P-value | Result |
+| --- | --- | --- | --- |
+| Welch t-test | 0.6272 | 0.5334 | Not significant |
+| Mann-Whitney U test | 972.0000 | 0.6139 | Not significant |
+
+Both p-values are higher than 0.05, so I fail to reject H0. There is not enough evidence that rainy and non-rainy days have different step counts.
+
+### Hypothesis 2: Weather Variables and Steps
+
+| Feature | Pearson r | Pearson p-value | Spearman rho | Spearman p-value |
+| --- | --- | --- | --- | --- |
+| Temperature | -0.0424 | 0.6725 | 0.0234 | 0.8154 |
+| Precipitation | -0.1166 | 0.2434 | -0.0042 | 0.9664 |
+
+All p-values are above 0.05, so the correlations are not statistically significant.
+
+## 7. Machine Learning
+
+The prediction task is regression because the target variable is daily step count. I used models that fit the course level: a baseline mean model, Linear Regression, Ridge Regression, Decision Tree Regression, and KNN Regression. I did not use Random Forest in this final version because it is more advanced than the main course methods.
+
+I used a chronological split: the first 75% of the data for training and the last 25% for testing. The test period is from **2026-03-18 to 2026-04-12**.
+
+| Model | MAE | RMSE | R2 |
+| --- | --- | --- | --- |
+| Decision Tree | 1,833.29 | 2,271.58 | -0.19 |
+| Baseline Mean | 1,887.56 | 2,305.66 | -0.23 |
+| KNN Regression | 2,023.72 | 2,354.07 | -0.28 |
+| Ridge Regression | 2,125.81 | 2,446.70 | -0.38 |
+| Linear Regression | 2,147.39 | 2,469.25 | -0.41 |
+
+The best test MAE was achieved by **Decision Tree**. Still, the R2 values are weak, so the models are not very reliable for predicting daily steps from only weather and calendar variables.
+
+![Actual vs Predicted](report_assets/actual_vs_predicted.png)
+
+### Cross-validation
+
+| Model | CV MAE Mean | CV RMSE Mean | CV R2 Mean |
+| --- | --- | --- | --- |
+| Baseline Mean | 1,798.10 | 2,232.22 | -0.01 |
+| Ridge Regression | 1,824.99 | 2,267.89 | -0.08 |
+| Linear Regression | 1,828.43 | 2,271.51 | -0.09 |
+| KNN Regression | 1,895.92 | 2,341.79 | -0.13 |
+| Decision Tree | 2,081.50 | 2,636.00 | -0.47 |
+
+Cross-validation also shows that the prediction performance is limited. This supports the idea that more personal variables are needed.
+
+## 8. Model Interpretation
+
+![Decision Tree Feature Importance](report_assets/decision_tree_feature_importance.png)
+
+| Feature | Importance |
+| --- | --- |
+| month | 0.358 |
+| precipitation_mm | 0.241 |
+| temperature_c | 0.204 |
+| is_weekend | 0.122 |
+| day_of_week | 0.047 |
+| dominant_weather_code | 0.028 |
+| rainy | 0.000 |
+
+The feature importance values show how the Decision Tree used the variables. This is not a causal result. It only helps interpret the model.
+
+## 9. Conclusion
+
+Overall, I did not find strong evidence that weather explains my daily step count. Rainy days had slightly higher average steps, but this was not statistically significant. Temperature and precipitation correlations were weak and insignificant. The machine learning models also had weak predictive performance.
+
+My conclusion is that daily routine probably matters more than daily weather averages. In future work, I would add more personal variables such as exam days, class schedule, sleep, transport mode, and location.
+
+## 10. Limitations and Future Work
+
+- The dataset is small with 102 daily observations.
+- Daily averages may hide hourly weather effects.
+- Personal schedule, exams, sleep, and location are not included.
+- Correlation does not prove causation.
+- More months of data would make the analysis stronger.
+
+## 11. Repository Files
+
+| File | Purpose |
+|---|---|
+| `README.md` | Main final report |
+| `complete_analysis_code.py` | Full combined code |
+| `cleaned_weather_steps_merged.csv` | Cleaned merged dataset |
+| `requirements.txt` | Needed Python packages |
+| `report_assets/` | Graph images used in the report |
+
+## Appendix A - Complete Combined Code
+
+The full runnable code is stored in [`complete_analysis_code.py`](complete_analysis_code.py). It loads `cleaned_weather_steps_merged.csv`, runs the statistical tests and models, and regenerates the figures in `report_assets/`.
